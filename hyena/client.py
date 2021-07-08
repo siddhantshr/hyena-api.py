@@ -2,6 +2,21 @@ import requests
 from .exceptions import *
 
 class NsfwResponse:
+    """
+    Response provided when the get_nsfw method of Client is called,
+    ---------------------------------------------------------------
+
+    Parameters
+    ----------
+    title : Title of response
+    description : Description of response
+    image_url : Image URL of response
+    URL : URL of the original post
+    
+    Version
+    --------
+    Added : 1.0.0
+    """
     def __init__(self, title, description, image_url, url):
         self.title = title
         self.description = description
@@ -12,6 +27,34 @@ class NsfwResponse:
         self.post = url
 
 class Client:
+    """
+    The client that connects to the API
+    -----------------------------------
+
+    Parameters
+    ----------
+    api_key : [Required] the API key that client should
+              use to connect, get one here:
+              https://api.hyenabot.xyz/ [String]
+
+    version : [Optional] the version that the client 
+              should use [String] [Default : Latest]
+
+    return_json : [Optional] wether the client should
+                  return raw json data. [Bool] 
+                  [Default : False]
+
+    Methods
+    -------
+    chatbot : Get a response from an AI Chatbot.
+
+    get_nsfw : Get nsfw images from subreddits
+               Endpoints: https://docs.hyenabot.xyz/version-1/nsfw/endpoints
+
+    Version
+    --------
+    Added : 1.0.0
+    """
     def __init__(
         self,
         api_key: str,
@@ -31,6 +74,31 @@ class Client:
         self.base_url = f"https://hyenabot.xyz/api/v{self.version}/"
 
     def chatbot(self, message, **kwargs):
+        """
+        Get a response from an AI Chatbot.
+        ----------------------------------
+
+        Parameters
+        ----------
+
+        message : [Required] the message that the bot should respond to
+                  [String]
+
+        language : [Optional] The language that the message is in and the bot should 
+                   respond in. [String] [Default : en or english]. 
+
+        bot_name : [Optional] Name of the bot [String] [Default : Hyena]
+
+        bot_owner : [Optional] Name of the bot owner [String] [Default : Donut]
+
+        Version
+        --------
+        Added : 1.0.0
+
+        Request Type
+        ------------
+        GET
+        """
         language = str(kwargs.get("language")) if kwargs.get("language") != None else "en"
         bot_owner = str(kwargs.get("owner")) if kwargs.get("owner") != None else "Donut"
         bot_name = str(kwargs.get("name")) if kwargs.get("name") != None else "Hyena"
@@ -56,6 +124,27 @@ class Client:
     ai_response = ai = ai_chatbot = chatbot
 
     def get_nsfw(self, nsfw_type, **kwargs): 
+        """
+        Get nsfw images from subreddits
+        Endpoints: https://docs.hyenabot.xyz/version-1/nsfw/endpoints
+        ----------------------------------
+
+        Parameters
+        ----------
+
+        nsfw_type : [Required] the endpoint that will be used for the response
+                    [String]
+
+        return_type : [Optional] The type to be returned in response Choose from
+                      <class | json | image> [String] [Default : class]. 
+        Version
+        --------
+        Added : 1.0.0
+
+        Request Type
+        ------------
+        GET
+        """
         return_type = str(kwargs.get("format")).lower() if str(kwargs.get("format")).lower() in ['class', 'json', 'image'] else 'class' 
         nsfw_type = nsfw_type.lower().replace("/", "").strip()
         resp = self.session.get(self.base_url + "nsfw/" + nsfw_type)
