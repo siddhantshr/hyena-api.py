@@ -1,2 +1,7 @@
 __pycache__
 .ipynb_checkpoints
+
+# Packaging
+build/
+dist/
+hyena_api.py.egg-info

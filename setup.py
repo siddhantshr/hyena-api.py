@@ -23,7 +23,7 @@ setup(
     url="https://github.com/AHiddenDonut/hyena-api.py",
     license=__license__,
     classifiers=[
-        "Development Status :: 1 - Alpha",
+        "Development Status :: 1 - Planning",
         "Intended Audience :: Developers",
         "Programming Language :: Python :: 3",
         "Operating System :: Unix",
