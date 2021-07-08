@@ -65,7 +65,7 @@ class Client:
         self.session = requests.Session()
         self.session.headers.update(self.headers)
         self.depreciated = []
-        self.version = str(kwargs.get("version")) if kwargs.get("langauge") != None else "1"
+        self.version = str(kwargs.get("version")) if kwargs.get("version") != None else "1"
         if self.version not in ["1"]:
             raise InvalidVersionError("The version given [{}] is not a valid version, choose from \"1\"".format(self.version))
         if self.version in self.depreciated:

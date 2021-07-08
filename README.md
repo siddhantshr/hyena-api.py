@@ -2,25 +2,29 @@
 
 ## ❓| Hyena API
 
-*The Hyena API is an API made by Donut#4427 for stuff like:*
+_The Hyena API is an API made by Donut#4427 for stuff like:_
 
-* Chatbot
-* NSFW
+- Chatbot
+- NSFW
 
-*To use the Hyena API you can visit [this page](https://www.hyenabot.xyz/api). And to get more info on it you can visit the [Docs!](https://docs.hyenabot.xyz/)*
+_To use the Hyena API you can visit [this page](https://www.hyenabot.xyz/api). And to get more info on it you can visit the [Docs!](https://docs.hyenabot.xyz/)_
 
-*And to see how the hyena-bot works and test it out visit the official [Discord server](https://discord.gg/QePftyb2kN)!*
+_And to see how the hyena-bot works and test it out visit the official [Discord server](https://discord.gg/QePftyb2kN)!_
 
 ## Installing
+
 ### **Python 3.8 or higher is required**
 
 To install the library use the following commands:
 
 ```
-To be filled
+pip install hyena-api.py
+# or
+pip install hyena-api.py==version
 ```
 
 To install from the master branch do this:
+
 ```
 $ git clone https://github.com/AHiddenDonut/hyena-api.py.py hyena-api
 $ cd hyena-api
@@ -29,7 +33,7 @@ $ python3 -m pip install -U .
 
 ## Examples
 
-*Some quick examples to show how you can use the api*
+_Some quick examples to show how you can use the api_
 
 ```python
 import hyena
@@ -62,6 +66,7 @@ resp.url : url of the original post
 
 ## Links
 
-* [Documentation](https://docs.hyenabot.xyz/)
-* [Official Server](https://discord.gg/QePftyb2kN)
-* [API Link](https://www.hyenabot.xyz/api)
+- [Documentation](https://docs.hyenabot.xyz/)
+- [Official Server](https://discord.gg/QePftyb2kN)
+- [API Link](https://www.hyenabot.xyz/api)
+
