@@ -12,7 +12,7 @@
 *And to see how the hyena-bot works and test it out visit the official [Discord server](https://discord.gg/QePftyb2kN)!*
 
 ## Installing
-###**Python 3.8 or higher is required**
+### **Python 3.8 or higher is required**
 
 To install the library use the following commands:
 
