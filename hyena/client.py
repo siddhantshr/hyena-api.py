@@ -167,4 +167,7 @@ https://docs.hyenabot.xyz/version-1/nsfw/endpoints for list of endpoints")
     nsfw = smirk = get_nsfw
 
     def close(self):
+        """
+        Closes the connection
+        """
         self.session.close()
