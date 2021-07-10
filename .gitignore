@@ -5,3 +5,6 @@ __pycache__
 build/
 dist/
 hyena_api.py.egg-info
+
+# testing
+test.py
