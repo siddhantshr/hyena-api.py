@@ -1,30 +1,22 @@
-import requests
-from .exceptions import *
+import aiohttp, asyncio
+from ..exceptions import *
+from ..nsfw_response import NsfwResponse
 
-class NsfwResponse:
-    """
-    Response provided when the get_nsfw method of Client is called,
-    ---------------------------------------------------------------
-
-    Parameters
-    ----------
-    title : Title of response
-    description : Description of response
-    image_url : Image URL of response
-    URL : URL of the original post
+class DictResponse(dict):
+    async def __aexit__(self,  exc_type, exc, tb):
+        await self.session.close()
+        return True
     
-    Version
-    --------
-    Added : 1.0.0
-    """
-    def __init__(self, title, description, image_url, url):
-        self.title = title
-        self.description = description
-        self.desc = description
-        self.image_url = image_url
-        self.image = image_url
-        self.url = url
-        self.post = url
+    async def __aenter__(self):
+        return self
+
+class StringResponse(str):
+    async def __aexit__(self,  exc_type, exc, tb):
+        await self.session.close()
+        return True
+    
+    async def __aenter__(self):
+        return self
 
 class Client:
     """
@@ -46,24 +38,20 @@ class Client:
 
     Methods
     -------
-    chatbot : Get a response from an AI Chatbot.
+    chatbot |coro| : Get a response from an AI Chatbot.
 
-    get_nsfw : Get nsfw images from subreddits
+    get_nsfw |coro| : Get nsfw images from subreddits
                Endpoints: https://docs.hyenabot.xyz/version-1/nsfw/endpoints
 
     Version
     --------
-    Added : 1.0.0
+    Added : 1.1.0
     """
-    def __init__(
-        self,
-        api_key: str,
-        **kwargs
-    ):
+    def __init__(self, api_key: str, **kwargs):
         self.api_key = api_key
         self.headers = {"api-key" : self.api_key}
-        self.session = requests.Session()
-        self.session.headers.update(self.headers)
+        self.loop = asyncio.get_event_loop()
+        self.session = aiohttp.ClientSession(headers=self.headers, loop=self.loop)
         self.depreciated = []
         self.version = str(kwargs.get("version")) if kwargs.get("version") != None else "1"
         if self.version not in ["1"]:
@@ -73,8 +61,9 @@ class Client:
         self.return_json = True if kwargs.get("return_json") == True else False
         self.base_url = f"https://hyenabot.xyz/api/v{self.version}/"
 
-    def chatbot(self, message, **kwargs):
+    async def chatbot(self, message, **kwargs):
         """
+        |coro|
         Get a response from an AI Chatbot.
         ----------------------------------
 
@@ -93,7 +82,7 @@ class Client:
 
         Version
         --------
-        Added : 1.0.0
+        Added : 1.1s.0
 
         Request Type
         ------------
@@ -109,25 +98,28 @@ class Client:
             "bot_owner" : bot_owner,
             "bot_name" : bot_name
         }
-        resp = self.session.get(self.base_url + "chatbot", params=payload)
-        if resp.status_code == 200:
+        #async 
+        resp = await self.session.get(self.base_url + "chatbot", params=payload)
+        _json = await resp.json()
+        if resp.status == 200:
             if self.return_json == True:
-                return resp.json()
-            return resp.json()['reply']
-        elif resp.status_code == 401:
+                return DictResponse(_json)
+            return StringResponse(_json['reply'])
+        elif resp.status == 401:
             raise UnauthorizedError("No API key was provided") # it should never happen :?
-        elif resp.status_code == 403:
+        elif resp.status == 403:
             raise InvalidApiKeyError("The API key provided [{}] is invalid".format(self.api_key))
-        elif resp.status_code == 422:
+        elif resp.status == 422:
             raise InvalidParametersError(resp.json()['err'])
     
     ai_response = ai = ai_chatbot = chatbot
 
-    def get_nsfw(self, nsfw_type, **kwargs): 
+    async def get_nsfw(self, nsfw_type, **kwargs):
         """
+        |coro|
         Get nsfw images from subreddits
         Endpoints: https://docs.hyenabot.xyz/version-1/nsfw/endpoints
-        ----------------------------------
+        -------------------------------------------------------------
 
         Parameters
         ----------
@@ -139,7 +131,7 @@ class Client:
                       <class | json | image> [String] [Default : class]. 
         Version
         --------
-        Added : 1.0.0
+        Added : 1.1.0
 
         Request Type
         ------------
@@ -147,27 +139,56 @@ class Client:
         """
         return_type = str(kwargs.get("format")).lower() if str(kwargs.get("format")).lower() in ['class', 'json', 'image'] else 'class' 
         nsfw_type = nsfw_type.lower().replace("/", "").strip()
-        resp = self.session.get(self.base_url + "nsfw/" + nsfw_type)
-        if resp.status_code == 200:
+        resp = await self.session.get(self.base_url + "nsfw/" + nsfw_type)
+        if resp.status == 200:
+            _json = await resp.json()
             if self.return_json == True or return_type == 'json':
-                return resp.json()
+                return DictResponse(_json)
             elif return_type == 'image':
-                return resp.json()['image_url']
+                return StringResponse(_json['image_url'])
             elif return_type == 'class':
-                _dict = resp.json()
-                return NsfwResponse(_dict['title'], _dict['description'], _dict['image_url'], _dict['url'])
-        if resp.status_code == 404:
+                return NsfwResponse(_json['title'], _json['description'], _json['image_url'], _json['url'])
+        if resp.status == 404:
             raise InvalidEndpointError("The endpoint given [{}] is not a valid endpoint, refer to \
-https://docs.hyenabot.xyz/version-1/nsfw/endpoints for list of endpoints")
-        elif resp.status_code == 401:
+https://docs.hyenabot.xyz/version-1/nsfw/endpoints for list of endpoints".format(nsfw_type))
+        elif resp.status == 401:
             raise UnauthorizedError("No API key was provided") # it should never happen :?
-        elif resp.status_code == 403:
+        elif resp.status == 403:
             raise InvalidApiKeyError("The API key provided [{}] is invalid".format(self.api_key))
 
     nsfw = smirk = get_nsfw
 
-    def close(self):
+    async def ok(self):
+        return "ok"
+
+    async def __aexit__(self,  exc_type, exc, tb):
+        """
+        Async context manager
+
+        Version
+        --------
+        Added : 1.1.0
+        """
+        await self.session.close()
+        return True
+    
+    async def __aenter__(self):
+        """
+        Async context manager
+
+        Version
+        --------
+        Added : 1.1.0
+        """
+        return self
+
+    async def close(self):
         """
         Closes the connection
+
+        Version
+        --------
+        Added : 1.1.0
         """
-        self.session.close()
+        await self.session.close()
+        return True

@@ -35,10 +35,11 @@ $ python3 -m pip install -U .
 
 _Some quick examples to show how you can use the api_
 
+### Sync:
 ```python
-import hyena
+import hyena.Sync
 
-hyena = hyena.Client("MY SUPER SECRET API KEY")
+hyena = hyena.Sync.Client("MY SUPER SECRET API KEY")
 
 # Chatbot response
 resp = hyena.chatbot("Hello!", name="My bot's name", owner="My name")
@@ -46,9 +47,9 @@ print(resp)
 ```
 
 ```python
-import hyena
+import hyena.Sync
 
-hyena = hyena.Client("MY SUPER SECRET API KEY")
+hyena = hyena.Sync.Client("MY SUPER SECRET API KEY")
 
 # NSFW images
 resp = hyena.nsfw("endpoint", format="json") # format will be a class by default
@@ -64,9 +65,39 @@ resp.url : url of the original post
 """
 ```
 
+### Async:
+```py
+import hyena.Async, asyncio
+
+async def main():
+    async with hyena.Async.Client("KGgGT#FnFE_z2BdcERAqeZvYmU6D0Q") as client:
+        async with (await client.nsfw("random", format="image")) as resp:
+            pass # stuff
+```
+
+```py
+import hyena.Async, asyncio
+
+async def main():
+    async with hyena.Async.Client("KGgGT#FnFE_z2BdcERAqeZvYmU6D0Q") as client:
+        async with (await client.chatbot("hello world")) as resp:
+            pass # stuff
+```
+
+```py
+# with discord.py:
+import hyena.Async
+
+hyena = hyena.Async.Client("MY SUPER SECRET API KEY")
+
+@client.command()
+async def chatbot(ctx, *, message):
+    my_reply = await hyena.chatbot(message, language="en", owner="myname", name="my bot's name")
+    await ctx.reply(my_reply)
+
+
 ## Links
 
 - [Documentation](https://docs.hyenabot.xyz/)
 - [Official Server](https://discord.gg/QePftyb2kN)
 - [API Link](https://www.hyenabot.xyz/api)
-
