@@ -1,103 +1,215 @@
-# Hyena API Wrapper
+# hyena-api.py
 
-## ❓| Hyena API
+> A lightweight Python wrapper for the [Hyena API](https://www.hyenabot.xyz/api) — supporting both synchronous and asynchronous usage.
 
-_The Hyena API is an API made by Donut#4427 for stuff like:_
+[![PyPI version](https://img.shields.io/pypi/v/hyena-api.py)](https://pypi.org/project/hyena-api.py/)
+[![Python](https://img.shields.io/pypi/pyversions/hyena-api.py)](https://pypi.org/project/hyena-api.py/)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-- Chatbot
-- NSFW
+---
 
-_To use the Hyena API you can visit [this page](https://www.hyenabot.xyz/api). And to get more info on it you can visit the [Docs!](https://docs.hyenabot.xyz/)_
+## 📖 About
 
-_And to see how the hyena-bot works and test it out visit the official [Discord server](https://discord.gg/QePftyb2kN)!_
+**hyena-api.py** is a Python client library that wraps the [Hyena API](https://www.hyenabot.xyz/api), originally built by Donut#4427. It provides a clean, Pythonic interface to:
 
-## Installing
+- 🤖 **Chatbot** — Get AI-generated replies to messages, with optional language, bot name, and owner customisation.
+- 🖼️ **NSFW image fetching** — Retrieve images from Reddit-based endpoints, returning results as a structured class, raw JSON, or a direct image URL.
 
-### **Python 3.8 or higher is required**
+The library ships with both a **synchronous** client (backed by `requests`) and an **asynchronous** client (backed by `aiohttp`), making it easy to integrate into scripts, bots, or async applications like those built with `discord.py`.
 
-To install the library use the following commands:
+---
 
-```
+## 🔗 Links
+
+| Resource | URL |
+|---|---|
+| PyPI | https://pypi.org/project/hyena-api.py/ |
+| API Documentation | https://docs.hyenabot.xyz/ |
+| API Key Registration | https://www.hyenabot.xyz/api |
+| Official Discord Server | https://discord.gg/QePftyb2kN |
+| Source Code | https://github.com/AHiddenDonut/hyena-api.py |
+
+---
+
+## ⚙️ Requirements
+
+- Python **3.6** or higher
+- `requests >= 2.25.1`
+- `aiohttp >= 3.7.4`
+
+---
+
+## 📦 Installation
+
+Install the latest stable release from PyPI:
+
+```bash
 pip install hyena-api.py
-# or
-pip install hyena-api.py==version
 ```
 
-To install from the master branch do this:
+Install a specific version:
 
-```
-$ git clone https://github.com/AHiddenDonut/hyena-api.py.py hyena-api
-$ cd hyena-api
-$ python3 -m pip install -U .
+```bash
+pip install hyena-api.py==1.1.0
 ```
 
-## Examples
+Install the latest development version directly from GitHub:
 
-_Some quick examples to show how you can use the api_
-
-### Sync:
-```python
-import hyena.Sync
-
-hyena = hyena.Sync.Client("MY SUPER SECRET API KEY")
-
-# Chatbot response
-resp = hyena.chatbot("Hello!", name="My bot's name", owner="My name")
-print(resp)
+```bash
+git clone https://github.com/AHiddenDonut/hyena-api.py hyena-api
+cd hyena-api
+pip install -U .
 ```
+
+---
+
+## 🚀 Quick Start
+
+### Synchronous client
 
 ```python
-import hyena.Sync
+from hyena.Sync import Client
 
-hyena = hyena.Sync.Client("MY SUPER SECRET API KEY")
+client = Client("YOUR_API_KEY")
 
-# NSFW images
-resp = hyena.nsfw("endpoint", format="json") # format will be a class by default
-print(resp)
+# Chatbot
+reply = client.chatbot("Hello!", name="MyBot", owner="MyName", language="en")
+print(reply)  # prints the bot's text reply
 
-"""
-How to use the response class [Default]
+# NSFW — returns a NsfwResponse object by default
+resp = client.nsfw("random")
+print(resp.title)
+print(resp.image_url)
+print(resp.url)
 
-resp.title : Title of response
-resp.description : Description of response
-resp.image_url : Image URL of response
-resp.url : url of the original post
-"""
+# NSFW — return raw image URL
+url = client.nsfw("random", format="image")
+print(url)
+
+client.close()
 ```
 
-### Async:
-```py
-import hyena.Async, asyncio
+### Asynchronous client
+
+```python
+import asyncio
+from hyena.Async import Client
 
 async def main():
-    async with hyena.Async.Client("KGgGT#FnFE_z2BdcERAqeZvYmU6D0Q") as client:
-        async with (await client.nsfw("random", format="image")) as resp:
-            pass # stuff
+    async with Client("YOUR_API_KEY") as client:
+        # Chatbot
+        reply = await client.chatbot("Hello!", language="en", name="MyBot", owner="MyName")
+        print(reply)
+
+        # NSFW — returns a NsfwResponse object by default
+        resp = await client.nsfw("random")
+        print(resp.title)
+        print(resp.image_url)
+
+asyncio.run(main())
 ```
 
-```py
-import hyena.Async, asyncio
+### With discord.py
 
-async def main():
-    async with hyena.Async.Client("KGgGT#FnFE_z2BdcERAqeZvYmU6D0Q") as client:
-        async with (await client.chatbot("hello world")) as resp:
-            pass # stuff
+```python
+import discord
+from discord.ext import commands
+from hyena.Async import Client as HyenaClient
+
+bot = commands.Bot(command_prefix="!")
+hyena = HyenaClient("YOUR_API_KEY")
+
+@bot.command()
+async def chat(ctx, *, message):
+    reply = await hyena.chatbot(message, language="en", name="MyBot", owner="MyName")
+    await ctx.reply(reply)
+
+bot.run("YOUR_BOT_TOKEN")
 ```
 
-```py
-# with discord.py:
-import hyena.Async
+---
 
-hyena = hyena.Async.Client("MY SUPER SECRET API KEY")
+## 📚 API Reference
 
-@client.command()
-async def chatbot(ctx, *, message):
-    my_reply = await hyena.chatbot(message, language="en", owner="myname", name="my bot's name")
-    await ctx.reply(my_reply)
+### `Client(api_key, *, version="1", return_json=False)`
 
+Both `hyena.Sync.Client` and `hyena.Async.Client` accept the same constructor parameters.
 
-## Links
+| Parameter | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `api_key` | `str` | ✅ | — | Your Hyena API key. |
+| `version` | `str` | ❌ | `"1"` | API version to use. |
+| `return_json` | `bool` | ❌ | `False` | If `True`, all methods return raw JSON dicts instead of processed values. |
 
-- [Documentation](https://docs.hyenabot.xyz/)
-- [Official Server](https://discord.gg/QePftyb2kN)
-- [API Link](https://www.hyenabot.xyz/api)
+---
+
+### `chatbot(message, *, language="en", name="Hyena", owner="Donut")`
+
+Get an AI chatbot response.
+
+| Parameter | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `message` | `str` | ✅ | — | The message to send to the chatbot. |
+| `language` | `str` | ❌ | `"en"` | Language code for the conversation. |
+| `name` | `str` | ❌ | `"Hyena"` | Display name of the bot. |
+| `owner` | `str` | ❌ | `"Donut"` | Name of the bot's owner. |
+
+**Returns:** `str` — the bot's reply (or `dict` if `return_json=True`).
+
+**Aliases:** `ai`, `ai_response`, `ai_chatbot`
+
+---
+
+### `get_nsfw(nsfw_type, *, format="class")`
+
+Fetch an NSFW image from a subreddit endpoint.
+
+| Parameter | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `nsfw_type` | `str` | ✅ | — | The endpoint name. See the [full list](https://docs.hyenabot.xyz/version-1/nsfw/endpoints). |
+| `format` | `str` | ❌ | `"class"` | Return format: `"class"`, `"json"`, or `"image"`. |
+
+**Returns:**
+- `"class"` → `NsfwResponse` with `.title`, `.description`, `.image_url`, `.url`
+- `"json"` → raw `dict`
+- `"image"` → `str` (direct image URL)
+
+**Aliases:** `nsfw`, `smirk`
+
+---
+
+### `NsfwResponse`
+
+| Attribute | Alias | Description |
+|---|---|---|
+| `.title` | — | Title of the post |
+| `.description` | `.desc` | Description of the post |
+| `.image_url` | `.image` | Direct URL to the image |
+| `.url` | `.post` | URL of the original Reddit post |
+
+---
+
+## ⚠️ Exceptions
+
+| Exception | When raised |
+|---|---|
+| `InvalidApiKeyError` | The API key provided is invalid (HTTP 403) |
+| `UnauthorizedError` | No API key was provided (HTTP 401) |
+| `InvalidParametersError` | A required parameter is missing or malformed (HTTP 422) |
+| `InvalidEndpointError` | The requested endpoint does not exist (HTTP 404) |
+| `InvalidVersionError` | The version specified is not supported |
+| `DepreciationError` | The version specified has been deprecated |
+
+All exceptions are importable from `hyena.exceptions`.
+
+---
+
+## 📋 Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for the full release history.
+
+---
+
+## 📄 License
+
+This project is licensed under the **GNU General Public License v3.0**. See [LICENSE](LICENSE) for details.
